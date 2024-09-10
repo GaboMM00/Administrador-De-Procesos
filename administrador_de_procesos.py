@@ -4,7 +4,6 @@ from procesos import *
 class AdministradorDeProcesos:
   def __init__(self,cantidad_procesos,reloj_global,root,lista_espera,lista_ejecucion,lista_terminados,lotes_pendientes):
     # Tiempos
-    
     self.tiempo_global = 0
     self.reloj_global = reloj_global
     #Listas Graficas
@@ -17,23 +16,23 @@ class AdministradorDeProcesos:
     self.lote_actual = 0
     self.procesos_por_lote = 7
     self.matriz_procesos = []
-    cant=int(cantidad_procesos)
+    cant = int(cantidad_procesos)
     self.generar_matriz_procesos(cant)
-    self.text=""
+    self.text = ""
 
   def generar_matriz_procesos(self, cantidad):
     Procesos.restart()
     cantidad_lotes = int(cantidad/self.procesos_por_lote)+(1 if cantidad%self.procesos_por_lote!=0 else 0)
     self.total_time=0
     for i in range(cantidad_lotes):
-      j=0
+      j = 0
       self.matriz_procesos.append([])
       while(j<self.procesos_por_lote and cantidad!=0):
-        cantidad-=1
+        cantidad -= 1
         proceso = Procesos()
-        self.total_time+=proceso.duracion
+        self.total_time += proceso.duracion
         self.matriz_procesos[i].append(proceso)
-        j+=1
+        j += 1
 
   def iniciar_simulacion(self):
       self.lote_actual = 0  
