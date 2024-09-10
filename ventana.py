@@ -78,12 +78,12 @@ class ProcesamientoPorLotesApp:
         self.button_obtener_resultados = tk.Button(frame_bottom, text="OBTENER RESULTADOS",command=lambda:self.admin.generar_txt())
         self.button_obtener_resultados.pack(side=tk.RIGHT)
     def iniciar_simulacion(self,cantidad_procesos):
-        administrador = AdministradorDeProcesos(cantidad_procesos)
+        administrador = AdministradorDeProcesos(cantidad_procesos,self.label_reloj_global,self.root,self.listbox_en_espera,self.listbox_ejecucion ,self.listbox_terminados,self.label_lotes_pendientes)
         self.admin=administrador
         self.listbox_en_espera.delete(0,tk.END)
         self.listbox_ejecucion.delete(0,tk.END)
         self.listbox_terminados.delete(0,tk.END)
-        administrador.ejecutar_procesos(self.root,self.label_reloj_global,self.listbox_en_espera,self.listbox_ejecucion ,self.listbox_terminados,self.label_lotes_pendientes)
+        administrador.iniciar_simulacion()
 
     # def update_labels(self, processes_text=None, reloj_global_text=None, lotes_pendientes_text=None):
     #     """Método para actualizar los textos de los labels."""
