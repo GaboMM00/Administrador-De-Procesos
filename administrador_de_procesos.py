@@ -18,6 +18,7 @@ class AdministradorDeProcesos:
     self.matriz_procesos = []
     cant = int(cantidad_procesos)
     self.generar_matriz_procesos(cant)
+    self.generar_datos_del_programa()
     self.text = ""
 
   def generar_matriz_procesos(self, cantidad):
@@ -33,6 +34,7 @@ class AdministradorDeProcesos:
         self.total_time += proceso.duracion
         self.matriz_procesos[i].append(proceso)
         j += 1
+
 
   def iniciar_simulacion(self):
       self.lote_actual = 0  
@@ -56,7 +58,7 @@ class AdministradorDeProcesos:
 
         if proceso_actual + 1 < len(lista_procesos):
             self.extraer_datos(lista_procesos[proceso_actual + 1], self.lista_espera)
-            self.lista_espera.insert(tk.END, f"Procesos pendientes: {len(lista_procesos) - (proceso_actual + 1)}")
+            self.lista_espera.insert(tk.END, f"Procesos pendientes: {len(lista_procesos) - (proceso_actual +2)}")
 
         lista_procesos[proceso_actual].duracion -= 1
         self.actualizar_reloj_global(1)
@@ -95,3 +97,13 @@ class AdministradorDeProcesos:
   def generar_txt(self):
     with open('textoDelPrograma.txt','w') as archivo:
       archivo.write(self.text+"\n")
+  def generar_datos_del_programa(self):
+    i=1
+    txt=""
+    with open('datosDelPrograma.txt','w')as archivo:
+      for lote in self.matriz_procesos:
+        txt+=f"Lote {i}\n"
+        i+=1
+        for proceso in lote:
+          txt+=f"{proceso.id} - {proceso.nombre_de_proceso}\nTME:{proceso.duracion}\n{proceso.operacion}\n"
+      archivo.write(txt+"\n")

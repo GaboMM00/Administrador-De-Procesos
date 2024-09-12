@@ -32,6 +32,7 @@ class Procesos:
       resultado=num1*num2
     elif(self.operacion=="/"):
       resultado=num1/num2
+    self.operacion=f"{num1} {self.operacion} {num2}"
     return f"{num1} {self.operacion} {num2} = {resultado}"
   
   @staticmethod
