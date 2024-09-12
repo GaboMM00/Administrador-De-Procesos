@@ -40,6 +40,7 @@ class AdministradorDeProcesos:
 
   def procesar_lote(self):
     if self.lote_actual < len(self.matriz_procesos):  # Si aún hay lotes por procesar
+        self.lotes_pendientes.config(text=f"# de Lotes pendientes: {len(self.matriz_procesos)-(self.lote_actual+1)}")
         self.ejecutar_procesos(self.matriz_procesos[self.lote_actual], 0, self.lote_actual+1)  # Procesar el lote actual
     else:
         print("Todos los lotes han sido procesados")

@@ -9,9 +9,9 @@ class ProcesamientoPorLotesApp:
         self.admin = None
         
         # Atributos para los labels que se van a modificar
-        self.label_processes_text = "# Procesos:"
-        self.label_reloj_global_text = "Reloj Global"
-        self.label_lotes_pendientes_text = "# de Lotes pendientes:"
+        # self.label_processes_text = "# Procesos:"
+        # self.label_reloj_global_text = "Reloj Global"
+        # self.label_lotes_pendientes_text = "# de Lotes pendientes:"
         
         # Configurar la interfaz
         self.create_widgets()
@@ -22,7 +22,7 @@ class ProcesamientoPorLotesApp:
         frame_top.pack(side=tk.TOP, fill=tk.X, padx=10, pady=10)
 
         # Etiqueta y cuadro de entrada para '# Procesos'
-        self.label_processes = tk.Label(frame_top, text=self.label_processes_text)
+        self.label_processes = tk.Label(frame_top, text="# Procesos:")
         self.label_processes.pack(side=tk.LEFT)
 
         self.entry_processes = tk.Entry(frame_top, width=10)
@@ -33,7 +33,7 @@ class ProcesamientoPorLotesApp:
         self.button_generate.pack(side=tk.LEFT, padx=10)
 
         # Etiqueta para 'Reloj Global'
-        self.label_reloj_global = tk.Label(frame_top, text=self.label_reloj_global_text)
+        self.label_reloj_global = tk.Label(frame_top, text="Reloj Global")
         self.label_reloj_global.pack(side=tk.RIGHT)
 
         # Crear marco principal para las listas
@@ -69,7 +69,7 @@ class ProcesamientoPorLotesApp:
         frame_bottom.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=10)
 
         # Etiqueta para '# de Lotes pendientes:'
-        self.label_lotes_pendientes = tk.Label(frame_bottom, text=self.label_lotes_pendientes_text)
+        self.label_lotes_pendientes = tk.Label(frame_bottom, text="# de Lotes pendientes:")
         self.label_lotes_pendientes.pack(side=tk.LEFT)
 
         # Botón para 'OBTENER RESULTADOS'
@@ -79,6 +79,7 @@ class ProcesamientoPorLotesApp:
     def iniciar_simulacion(self,cantidad_procesos):
         administrador = AdministradorDeProcesos(cantidad_procesos,self.label_reloj_global,self.root,self.listbox_en_espera,self.listbox_ejecucion ,self.listbox_terminados,self.label_lotes_pendientes)
         self.admin=administrador
+        # Reinizar listas antes de empezar otra simulacion
         self.listbox_en_espera.delete(0,tk.END)
         self.listbox_ejecucion.delete(0,tk.END)
         self.listbox_terminados.delete(0,tk.END)
