@@ -58,7 +58,7 @@ class AdministradorDeProcesos:
 
         if proceso_actual + 1 < len(lista_procesos):
             self.extraer_datos(lista_procesos[proceso_actual + 1], self.lista_espera)
-            self.lista_espera.insert(tk.END, f"Procesos pendientes: {len(lista_procesos) - (proceso_actual +2)}")
+            self.lista_espera.insert(tk.END, f"Procesos pendientes: {len(lista_procesos) - (proceso_actual +2)}")#modificar para que no baje de 0
 
         lista_procesos[proceso_actual].duracion -= 1
         self.actualizar_reloj_global(1)
@@ -95,12 +95,12 @@ class AdministradorDeProcesos:
     label_list.insert(tk.END,f"TME:{proceso.duracion}")
 
   def generar_txt(self):
-    with open('textoDelPrograma.txt','w') as archivo:
+    with open('resultados.txt','w') as archivo:
       archivo.write(self.text+"\n")
   def generar_datos_del_programa(self):
     i=1
     txt=""
-    with open('datosDelPrograma.txt','w')as archivo:
+    with open('datos.txt','w')as archivo:
       for lote in self.matriz_procesos:
         txt+=f"Lote {i}\n"
         i+=1

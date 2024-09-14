@@ -8,11 +8,6 @@ class ProcesamientoPorLotesApp:
         self.root.geometry("600x400")
         self.admin = None
         
-        # Atributos para los labels que se van a modificar
-        # self.label_processes_text = "# Procesos:"
-        # self.label_reloj_global_text = "Reloj Global"
-        # self.label_lotes_pendientes_text = "# de Lotes pendientes:"
-        
         # Configurar la interfaz
         self.create_widgets()
 
@@ -28,7 +23,7 @@ class ProcesamientoPorLotesApp:
         self.entry_processes = tk.Entry(frame_top, width=10)
         self.entry_processes.pack(side=tk.LEFT, padx=5)
 
-        # Botón para 'Generar'
+        # Botón para Empezar simulacion 
         self.button_generate = tk.Button(frame_top, text="Generar", command=lambda:self.iniciar_simulacion(self.entry_processes.get()))
         self.button_generate.pack(side=tk.LEFT, padx=10)
 
@@ -79,7 +74,7 @@ class ProcesamientoPorLotesApp:
     def iniciar_simulacion(self,cantidad_procesos):
         administrador = AdministradorDeProcesos(cantidad_procesos,self.label_reloj_global,self.root,self.listbox_en_espera,self.listbox_ejecucion ,self.listbox_terminados,self.label_lotes_pendientes)
         self.admin=administrador
-        # Reinizar listas antes de empezar otra simulacion
+        # Reiniciar listas antes de empezar otra simulacion
         self.listbox_en_espera.delete(0,tk.END)
         self.listbox_ejecucion.delete(0,tk.END)
         self.listbox_terminados.delete(0,tk.END)
