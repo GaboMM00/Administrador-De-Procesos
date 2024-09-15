@@ -20,7 +20,9 @@ class ProcesamientoPorLotesApp:
         self.label_processes = tk.Label(frame_top, text="# Procesos:")
         self.label_processes.pack(side=tk.LEFT)
 
-        self.entry_processes = tk.Entry(frame_top, width=10)
+        vcmd = (self.root.register(lambda text: text.isdigit() or text==""), '%P')
+
+        self.entry_processes = tk.Entry(frame_top, width=10,validate="key", validatecommand=vcmd)
         self.entry_processes.pack(side=tk.LEFT, padx=5)
 
         # Botón para Empezar simulacion 
@@ -72,11 +74,11 @@ class ProcesamientoPorLotesApp:
         self.button_obtener_resultados.pack(side=tk.RIGHT)
 
     def iniciar_simulacion(self,cantidad_procesos):
-        administrador = AdministradorDeProcesos(cantidad_procesos,self.label_reloj_global,self.root,self.listbox_en_espera,self.listbox_ejecucion ,self.listbox_terminados,self.label_lotes_pendientes)
+        self.button_generate.config(state=tk.DISABLED)
+        administrador = AdministradorDeProcesos(cantidad_procesos,self.button_generate,self.label_reloj_global,self.root,self.listbox_en_espera,self.listbox_ejecucion ,self.listbox_terminados,self.label_lotes_pendientes)
         self.admin=administrador
         # Reiniciar listas antes de empezar otra simulacion
         self.listbox_en_espera.delete(0,tk.END)
         self.listbox_ejecucion.delete(0,tk.END)
         self.listbox_terminados.delete(0,tk.END)
         administrador.iniciar_simulacion()
-

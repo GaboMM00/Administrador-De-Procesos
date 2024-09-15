@@ -2,7 +2,9 @@ import tkinter as tk
 from tkinter import ttk
 from procesos import *
 class AdministradorDeProcesos:
-  def __init__(self,cantidad_procesos,reloj_global,root,lista_espera,lista_ejecucion,lista_terminados,lotes_pendientes):
+  def __init__(self,cantidad_procesos,boton,reloj_global,root,lista_espera,lista_ejecucion,lista_terminados,lotes_pendientes):
+    # Boton
+    self.button_generate = boton
     # Tiempos
     self.tiempo_global = 0
     self.reloj_global = reloj_global
@@ -16,7 +18,7 @@ class AdministradorDeProcesos:
     self.lote_actual = 0
     self.procesos_por_lote = 7
     self.matriz_procesos = []
-    cant = int(cantidad_procesos)
+    cant = int(cantidad_procesos) if cantidad_procesos != "" else 0
     self.generar_matriz_procesos(cant)
     self.generar_datos_del_programa()
     self.text = ""
@@ -37,6 +39,7 @@ class AdministradorDeProcesos:
 
 
   def iniciar_simulacion(self):
+      self.button_generate.config(state=tk.DISABLED)
       self.lote_actual = 0  
       self.procesar_lote()  
 
@@ -47,6 +50,7 @@ class AdministradorDeProcesos:
     else:
         print("Todos los lotes han sido procesados")
         print(f"Tiempo total: {self.total_time}")
+        self.button_generate.config(state=tk.NORMAL)
 
   def ejecutar_procesos(self, lista_procesos, proceso_actual, lote):
     # Limpiar las listas de la UI
