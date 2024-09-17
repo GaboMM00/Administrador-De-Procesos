@@ -17,6 +17,7 @@ class Procesos:
 
     #Inicializa los metodos con un valor aleatorio
     self.duracion=random.randint(6,12)
+    self.tiempo_maximo=self.duracion
     self.operacion=self._operaciones[random.randint(0,3)]
     self.resultado=self.generar_operacion()
     self.nombre_de_proceso=self.nombres_de_procesos[random.randint(0,3)]
@@ -33,7 +34,7 @@ class Procesos:
     elif(self.operacion=="/"):
       resultado=num1/num2
     self.operacion=f"{num1} {self.operacion} {num2}"
-    return f"{num1} {self.operacion} {num2} = {resultado}"
+    return f"{self.operacion} = {resultado}"
   
   @staticmethod
   def restart():

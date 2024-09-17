@@ -22,6 +22,8 @@ class AdministradorDeProcesos:
     self.generar_matriz_procesos(cant)
     self.generar_datos_del_programa()
     self.text = ""
+    # Esta en ejecucion
+    self.estatus = False
 
   def generar_matriz_procesos(self, cantidad):
     Procesos.restart()
@@ -39,6 +41,7 @@ class AdministradorDeProcesos:
 
 
   def iniciar_simulacion(self):
+      self.estatus=True
       self.button_generate.config(state=tk.DISABLED)
       self.lote_actual = 0  
       self.procesar_lote()  
@@ -51,15 +54,17 @@ class AdministradorDeProcesos:
         print("Todos los lotes han sido procesados")
         print(f"Tiempo total: {self.total_time}")
         self.button_generate.config(state=tk.NORMAL)
+        self.estatus=False
 
   def ejecutar_procesos(self, lista_procesos, proceso_actual, lote):
+    # Guardar el proceso actual en ejecución
+    self.proceso_actual = proceso_actual
     # Limpiar las listas de la UI
     self.lista_espera.delete(0, tk.END)
     self.lista_ejecucion.delete(0, tk.END)
 
     if proceso_actual < len(lista_procesos) and lista_procesos[proceso_actual].duracion > 0:
-        self.extraer_datos(lista_procesos[proceso_actual], self.lista_ejecucion)
-
+        self.extraer_datos2(lista_procesos[proceso_actual], self.lista_ejecucion)
         if proceso_actual + 1 < len(lista_procesos):
             self.extraer_datos(lista_procesos[proceso_actual + 1], self.lista_espera)
             self.lista_espera.insert(tk.END, f"Procesos pendientes: {len(lista_procesos) - (proceso_actual +2)}")#modificar para que no baje de 0
@@ -88,7 +93,25 @@ class AdministradorDeProcesos:
     elif proceso_actual == len(lista_procesos):
         self.lote_actual += 1
         self.procesar_lote()
-    
+
+  def interrumpir_proceso_actual(self):
+    # Verificar si hay un proceso en ejecución
+    if hasattr(self, 'proceso_actual') and self.proceso_actual < len(self.matriz_procesos[self.lote_actual]):
+      proceso_interrumpido = self.matriz_procesos[self.lote_actual].pop(self.proceso_actual)
+      # Mover el proceso al final del lote actual
+      self.matriz_procesos[self.lote_actual].append(proceso_interrumpido)
+      # Actualizar la interfaz gráfica para reflejar el cambio
+      self.lista_ejecucion.delete(0, tk.END)
+      self.lista_espera.delete(0, tk.END)
+      self.extraer_datos(proceso_interrumpido, self.lista_espera)
+      self.lista_espera.insert(tk.END, f"Proceso {proceso_interrumpido.id} interrumpido y movido al final")
+
+  def terminar_proceso_actual_con_error(self):
+    operacion = self.matriz_procesos[self.lote_actual][self.proceso_actual].operacion
+    self.matriz_procesos[self.lote_actual][self.proceso_actual].duracion = 0
+    self.matriz_procesos[self.lote_actual][self.proceso_actual].resultado = f"{operacion} = Error"
+    # self.lista_ejecucion.delete(0, tk.END)
+
   def actualizar_reloj_global(self,suma):
     self.tiempo_global += suma
     self.reloj_global.config(text="Reloj Global:"+str(self.tiempo_global))
@@ -96,7 +119,15 @@ class AdministradorDeProcesos:
   def extraer_datos(self,proceso,label_list):
     label_list.insert(tk.END,f"{proceso.id} - {proceso.nombre_de_proceso}")
     label_list.insert(tk.END,proceso.resultado)
-    label_list.insert(tk.END,f"TME:{proceso.duracion}")
+    label_list.insert(tk.END,f"TME Max:{proceso.tiempo_maximo}")
+    if proceso.duracion!=proceso.tiempo_maximo:
+       label_list.insert(tk.END,f"TME Restante:{proceso.duracion}")
+
+  def extraer_datos2(self,proceso,label_list):
+    label_list.insert(tk.END,f"{proceso.id} - {proceso.nombre_de_proceso}")
+    label_list.insert(tk.END,proceso.resultado)
+    label_list.insert(tk.END,f"TME Ejecutado: {proceso.tiempo_maximo-proceso.duracion}")
+    label_list.insert(tk.END,f"TME Restante: {proceso.duracion}")
 
   def generar_txt(self):
     with open('resultados.txt','w') as archivo:

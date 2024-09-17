@@ -7,7 +7,11 @@ class ProcesamientoPorLotesApp:
         self.root.title("ProcesamientoPorLotes")
         self.root.geometry("600x400")
         self.admin = None
-        
+
+        # Vincula la tecla "i" para la interrupción del proceso
+        self.root.bind("<i>", self.interrumpir_proceso)
+        # Vincula la tecla "e" para terminar el proceso con error
+        self.root.bind("<e>", self.terminar_proceso_con_error)
         # Configurar la interfaz
         self.create_widgets()
 
@@ -82,3 +86,10 @@ class ProcesamientoPorLotesApp:
         self.listbox_ejecucion.delete(0,tk.END)
         self.listbox_terminados.delete(0,tk.END)
         administrador.iniciar_simulacion()
+
+    def interrumpir_proceso(self, event):
+      if self.admin and self.admin.estatus:
+          self.admin.interrumpir_proceso_actual()
+    def terminar_proceso_con_error(self, event):
+      if self.admin and self.admin.estatus:
+          self.admin.terminar_proceso_actual_con_error()
