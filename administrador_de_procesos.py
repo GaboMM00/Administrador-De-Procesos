@@ -1,5 +1,4 @@
 import tkinter as tk
-from tkinter import ttk
 from procesos import *
 class AdministradorDeProcesos:
   def __init__(self,cantidad_procesos,boton,reloj_global,root,lista_espera,lista_ejecucion,lista_terminados,lotes_pendientes):
@@ -129,7 +128,7 @@ class AdministradorDeProcesos:
   def generar_txt(self):
     with open('resultados.txt','w') as archivo:
       archivo.write(self.text+"\n")
-      
+
   def generar_datos_del_programa(self):
     i=1
     txt=""
