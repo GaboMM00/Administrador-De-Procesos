@@ -1,11 +1,12 @@
 from administrador_de_procesos import *
 
+
 class ProcesamientoPorLotesApp:
     def __init__(self, root):
         # Configurción de root
         self.root = root
         self.root.title("ProcesamientoPorLotes")
-        self.root.geometry("600x400")
+        self.root.geometry("650x400")
         self.admin = None
 
         # Vincula la tecla "i" para la interrupción del proceso
@@ -29,7 +30,7 @@ class ProcesamientoPorLotesApp:
         self.entry_processes = tk.Entry(frame_top, width=10,validate="key", validatecommand=vcmd)
         self.entry_processes.pack(side=tk.LEFT, padx=5)
 
-        # Botón para Empezar simulacion 
+        # Boton para Empezar simulacion 
         self.button_generate = tk.Button(frame_top, text="Generar", command=lambda:self.iniciar_simulacion(self.entry_processes.get()))
         self.button_generate.pack(side=tk.LEFT, padx=10)
 
@@ -41,8 +42,8 @@ class ProcesamientoPorLotesApp:
         frame_main = tk.Frame(self.root)
         frame_main.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        # Lista de 'EN ESPERA'
-        label_en_espera = tk.Label(frame_main, text="EN ESPERA")
+        # Lista de 'Cola de listos'
+        label_en_espera = tk.Label(frame_main, text="Listos")
         label_en_espera.grid(row=0, column=0, padx=20)
         self.listbox_en_espera = tk.Listbox(frame_main, width=20, height=15)
         self.listbox_en_espera.grid(row=1, column=0, padx=20)
@@ -52,16 +53,20 @@ class ProcesamientoPorLotesApp:
         label_ejecucion.grid(row=0, column=1, padx=20)
         self.listbox_ejecucion = tk.Listbox(frame_main, width=20, height=8)
         self.listbox_ejecucion.grid(row=1, column=1, padx=20, pady=(0,20))
-
+        # Lista de 'Bloqueados'
+        label_bloqueados = tk.Label(frame_main, text="BLOQUEADOS")
+        label_bloqueados.grid(row=0, column=2, padx=20)
+        self.listbox_bloqueados = tk.Listbox(frame_main, width=20, height=15)
+        self.listbox_bloqueados.grid(row=1, column=2, padx=20)
         # Lista de 'TERMINADOS'
         label_terminados = tk.Label(frame_main, text="TERMINADOS")
-        label_terminados.grid(row=0, column=2, padx=20)
+        label_terminados.grid(row=0, column=3, padx=20)
         self.listbox_terminados = tk.Listbox(frame_main, width=20, height=15)
-        self.listbox_terminados.grid(row=1, column=2, padx=0)
+        self.listbox_terminados.grid(row=1, column=3, padx=0)
 
         # Scrollbar para las listas
         scrollbar = tk.Scrollbar(frame_main,orient=tk.VERTICAL)
-        scrollbar.grid(row=1, column=3,padx=0, sticky="ns")
+        scrollbar.grid(row=1, column=4,padx=0, sticky="ns")
         self.listbox_terminados.config(yscrollcommand=scrollbar.set)
         scrollbar.config(command=self.listbox_terminados.yview)
 
@@ -74,22 +79,24 @@ class ProcesamientoPorLotesApp:
         self.label_lotes_pendientes.pack(side=tk.LEFT)
 
         # Botón para 'OBTENER RESULTADOS'
-        self.button_obtener_resultados = tk.Button(frame_bottom, text="OBTENER RESULTADOS",command=lambda:self.admin.generar_txt())
+        self.button_obtener_resultados = tk.Button(frame_bottom, text="OBTENER RESULTADOS", command=lambda:self.admin.generar_txt())
         self.button_obtener_resultados.pack(side=tk.RIGHT)
 
     def iniciar_simulacion(self,cantidad_procesos):
+      if int(cantidad_procesos)<100000:
         self.button_generate.config(state=tk.DISABLED)
-        administrador = AdministradorDeProcesos(cantidad_procesos,self.button_generate,self.label_reloj_global,self.root,self.listbox_en_espera,self.listbox_ejecucion ,self.listbox_terminados,self.label_lotes_pendientes)
+        administrador = AdministradorDeProcesos(cantidad_procesos,self.button_generate,self.label_reloj_global,self.root,self.listbox_en_espera,self.listbox_ejecucion ,self.listbox_bloqueados,self.listbox_terminados)#,self.label_lotes_pendientes)
         self.admin=administrador
         # Reiniciar listas antes de empezar otra simulacion
         self.listbox_en_espera.delete(0,tk.END)
         self.listbox_ejecucion.delete(0,tk.END)
-        self.listbox_terminados.delete(0,tk.END)
+        self.listbox_terminados.delete(0,tk.END)        
         administrador.iniciar_simulacion()
 
     def interrumpir_proceso(self, event):
       if self.admin and self.admin.estatus:
           self.admin.interrumpir_proceso_actual()
+          
     def terminar_proceso_con_error(self, event):
       if self.admin and self.admin.estatus:
           self.admin.terminar_proceso_actual_con_error()

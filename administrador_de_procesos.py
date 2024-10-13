@@ -1,7 +1,8 @@
 import tkinter as tk
 from procesos import *
+
 class AdministradorDeProcesos:
-  def __init__(self,cantidad_procesos,boton,reloj_global,root,lista_espera,lista_ejecucion,lista_terminados,lotes_pendientes):
+  def __init__(self, cantidad_procesos, boton, reloj_global, root, lista_espera, lista_ejecucion,inter_bloqueados,lista_terminados):
     # Boton
     self.button_generate = boton
     # Tiempos
@@ -12,130 +13,166 @@ class AdministradorDeProcesos:
     self.lista_espera = lista_espera
     self.lista_ejecucion = lista_ejecucion
     self.lista_terminados = lista_terminados
-    self.lotes_pendientes = lotes_pendientes
-    #Lotes 
-    self.lote_actual = 0
-    self.procesos_por_lote = 7
-    self.matriz_procesos = []
+    self.bloqueados=inter_bloqueados
+    # Lista de procesos nuevos
+    self.lista_nuevos = []
     cant = int(cantidad_procesos) if cantidad_procesos != "" else 0
-    self.generar_matriz_procesos(cant)
+    self.generar_lista_procesos(cant)
     self.generar_datos_del_programa()
     self.text = ""
+    # Procesos en listos
+    self.cantidad_procesos_listos = 7
+    self.lista_listos = []
+
+    self.proceso_actual=None
+
+    self.cantidad_procesos_interrupcion = 0
+    self.bandera_interrupcion = False
+    self.tiempo_a_interrumpir=5
+    self.lista_bloqueados=[]
     # Bandera que se activa cuando hay procesos en ejecucion
     self.estatus = False
-
-  def generar_matriz_procesos(self, cantidad):
-    Procesos.restart()
-    cantidad_lotes = int(cantidad/self.procesos_por_lote)+(1 if cantidad%self.procesos_por_lote!=0 else 0)
-    self.total_time=0
-    for i in range(cantidad_lotes):
-      j = 0
-      self.matriz_procesos.append([])
-      while(j<self.procesos_por_lote and cantidad!=0):
-        cantidad -= 1
-        proceso = Procesos()
-        self.total_time += proceso.duracion
-        self.matriz_procesos[i].append(proceso)
-        j += 1
-
-
-  def iniciar_simulacion(self):
-      self.estatus=True
-      self.button_generate.config(state=tk.DISABLED)
-      self.lote_actual = 0  
-      self.procesar_lote()  
-
-  def procesar_lote(self):
-    if self.lote_actual < len(self.matriz_procesos):  # Si aún hay lotes por procesar
-      self.lotes_pendientes.config(text=f"# de Lotes pendientes: {len(self.matriz_procesos)-(self.lote_actual+1)}")
-      self.ejecutar_procesos(self.matriz_procesos[self.lote_actual], 0, self.lote_actual+1)  # Procesar el lote actual
+    # Algoritmo de planificación
+    self.algoritmo_de_planificacion = self.planificacion_fifo
+# Algoritmo de planificación FiFo (First In, First Out)
+  def planificacion_fifo(self):
+    if len(self.lista_listos) > 0:
+      proceso = self.lista_listos[0]  # Siempre selecciona el primer proceso en la lista
+      return proceso, proceso.duracion  # Ejecuta el proceso completo
     else:
-      print("Todos los lotes han sido procesados")
-      print(f"Tiempo total: {self.total_time}")
+      return None, 0  # No hay procesos para ejecutar
+      
+  # Generar lista de procesos 
+  def generar_lista_procesos(self, cantidad):
+    Procesos.restart()
+    self.total_time = 0
+    for _ in range(cantidad):
+      proceso = Procesos()
+      self.total_time += proceso.duracion
+      self.lista_nuevos.append(proceso)
+
+  # Iniciar simulación (eliminar manejo de lotes)
+  def iniciar_simulacion(self):
+    self.llenar_lista_de_listos()
+    self.mostrar_listos()
+    self.estatus = True
+    self.button_generate.config(state=tk.DISABLED)
+    self.procesar_siguiente_proceso()  # Iniciar con el primer proceso según el algoritmo
+
+  # Procesar el siguiente proceso basado en el algoritmo de planificación
+  def procesar_siguiente_proceso(self):
+    if len(self.lista_listos) > 0 or len(self.lista_bloqueados):  # Si aún hay procesos por ejecutar
+      proceso, tiempo_ejecucion = self.algoritmo_de_planificacion()
+      self.proceso_actual = proceso
+      if proceso:  # Si se seleccionó un proceso válido      
+        self.ejecutar_tiempo_de_proceso(proceso, tiempo_ejecucion)
+      else:
+        print("No hay procesos listos para ejecutar")#Buscar una solucion para cuando todos los procesos sean interrumpidos
+    else:
+      print("Todos los procesos han sido procesados")
       self.button_generate.config(state=tk.NORMAL)
-      self.estatus=False
+      self.estatus = False
 
-  def ejecutar_procesos(self, lista_procesos, proceso_actual, lote):
-    # Guardar el proceso actual en ejecución
-    self.proceso_actual = proceso_actual
-    # Limpiar las listas de la UI
-    self.lista_espera.delete(0, tk.END)
-    self.lista_ejecucion.delete(0, tk.END)
-
-    if proceso_actual < len(lista_procesos) and lista_procesos[proceso_actual].duracion > 0:
-        self.extraer_datos2(lista_procesos[proceso_actual], self.lista_ejecucion)
-        if proceso_actual + 1 < len(lista_procesos):
-            self.extraer_datos(lista_procesos[proceso_actual + 1], self.lista_espera)
-            self.lista_espera.insert(tk.END, f"Procesos pendientes: {len(lista_procesos) - (proceso_actual +2)}")
-
-        lista_procesos[proceso_actual].duracion -= 1
-        self.actualizar_reloj_global(1)
-        
-        # Volver a ejecutar el mismo proceso después de 1 segundo
-        self.root.after(1000, self.ejecutar_procesos, lista_procesos, proceso_actual, lote)
-
-    elif proceso_actual < len(lista_procesos):
-        if proceso_actual == 0:
-            self.lista_terminados.insert(tk.END, f"Lote {lote}\n")
-            self.text += f"Lote {lote}\n"
-
-        self.lista_terminados.insert(tk.END, f"{lista_procesos[proceso_actual].id} - {lista_procesos[proceso_actual].nombre_de_proceso}")
-        self.lista_terminados.insert(tk.END, lista_procesos[proceso_actual].resultado)
-        self.text += f"{lista_procesos[proceso_actual].id} - {lista_procesos[proceso_actual].nombre_de_proceso}\n{lista_procesos[proceso_actual].resultado}\n"
-        
-        proceso_actual += 1
-        
-        # Ejecutar el siguiente proceso en el mismo lote
-        self.ejecutar_procesos(lista_procesos, proceso_actual, lote)
-
-    # Si todos los procesos del lote actual han sido ejecutados, pasa al siguiente lote
-    elif proceso_actual == len(lista_procesos):
-        self.lote_actual += 1
-        self.procesar_lote()
-
-  def interrumpir_proceso_actual(self):
-    # Verificar si hay un proceso en ejecución
-    if hasattr(self, 'proceso_actual') and self.proceso_actual < len(self.matriz_procesos[self.lote_actual])-1:
-      proceso_interrumpido = self.matriz_procesos[self.lote_actual].pop(self.proceso_actual)
-      # Mover el proceso al final del lote actual
-      self.matriz_procesos[self.lote_actual].append(proceso_interrumpido)
-      # Actualizar la interfaz gráfica para reflejar el cambio
+  def retener_proceso(self,time,proceso):
+    if(self.bandera_interrupcion==True):
+      self.bandera_interrupcion=False
+      self.lista_bloqueados.append(self.proceso_actual)
+      self.lista_listos.remove(self.proceso_actual)
+      self.procesar_siguiente_proceso()
+    elif(time>0 and proceso.duracion>0):
+      self.actualizar_reloj_global(1)
+      self.actualizar_lista_de_interrupcion()
+      proceso.duracion -= 1
+      # self.lista_espera.delete(0, tk.END)
       self.lista_ejecucion.delete(0, tk.END)
-      self.lista_espera.delete(0, tk.END)
+      self.extraer_datos2(proceso, self.lista_ejecucion)
+      self.root.after(1000, self.retener_proceso, time-1, proceso)
+    else:
+      # self.bandera_interrupcion=False
+      self.procesar_siguiente_proceso()  
+  # Ejecutar una cantidad de tiempo de un proceso
+  def ejecutar_tiempo_de_proceso(self, proceso, tiempo):
+    if proceso.duracion > 0:
+      # Actualizar el tiempo del proceso
+      tiempo_a_ejecutar = min(tiempo, proceso.duracion)
+      self.retener_proceso(tiempo_a_ejecutar,proceso)
+      self.mostrar_listos(proceso)
+      # 
+      # 
+      # Revisar si tienes que volver a meter el proceso en la lista de listos
+      # 
+      # 
+    if proceso.duracion == 0:
+      # Marcar el proceso como terminado
+      self.lista_terminados.insert(tk.END, f"{proceso.id} - {proceso.nombre_de_proceso}")
+      self.lista_terminados.insert(tk.END, proceso.resultado)
+      self.text += f"{proceso.id} - {proceso.nombre_de_proceso}\n{proceso.resultado}\n"
+      # 
+      self.lista_listos.remove(proceso)
+      self.llenar_lista_de_listos()
+      self.procesar_siguiente_proceso()
+  def mostrar_listos(self, event=None):
+    self.lista_espera.delete(0, tk.END)
+    # print("mostar listos")
+    for proceso in self.lista_listos:
+      # print("for")
+      if event!=proceso:
+        self.lista_espera.insert(tk.END, f"{proceso.id} - {proceso.nombre_de_proceso}")
+        self.lista_espera.insert(tk.END, f"TME:{proceso.duracion}")
+        if proceso.duracion != proceso.tiempo_maximo:
+          self.lista_espera.insert(tk.END, f"TME Resgtante:{proceso.duracion}")
 
-  def terminar_proceso_actual_con_error(self):
-    operacion = self.matriz_procesos[self.lote_actual][self.proceso_actual].operacion
-    self.matriz_procesos[self.lote_actual][self.proceso_actual].duracion = 0
-    self.matriz_procesos[self.lote_actual][self.proceso_actual].resultado = f"{operacion} = Error"
+  def llenar_lista_de_listos(self):
+    if(len(self.lista_listos) < self.cantidad_procesos_listos-self.cantidad_procesos_interrupcion):
+      if(len(self.lista_nuevos) > 0):
+        self.lista_listos.append(self.lista_nuevos.pop(0))
+        self.llenar_lista_de_listos()
 
-  def actualizar_reloj_global(self,suma):
+  def actualizar_reloj_global(self, suma):
     self.tiempo_global += suma
-    self.reloj_global.config(text="Reloj Global:"+str(self.tiempo_global))
+    self.reloj_global.config(text="Reloj Global:" + str(self.tiempo_global))
 
-  def extraer_datos(self,proceso,label_list):
-    label_list.insert(tk.END,f"{proceso.id} - {proceso.nombre_de_proceso}")
-    label_list.insert(tk.END,proceso.resultado)
-    label_list.insert(tk.END,f"TME Max:{proceso.tiempo_maximo}")
-    if proceso.duracion!=proceso.tiempo_maximo:
-       label_list.insert(tk.END,f"TME Restante:{proceso.duracion}")
+  def extraer_datos(self, proceso, label_list):
+    label_list.insert(tk.END, f"{proceso.id} - {proceso.nombre_de_proceso}")
+    label_list.insert(tk.END, proceso.resultado)
+    label_list.insert(tk.END, f"TME Max:{proceso.tiempo_maximo}")
+    if proceso.duracion != proceso.tiempo_maximo:
+      label_list.insert(tk.END, f"TME Restante:{proceso.duracion}")
 
-  def extraer_datos2(self,proceso,label_list):
-    label_list.insert(tk.END,f"{proceso.id} - {proceso.nombre_de_proceso}")
-    label_list.insert(tk.END,proceso.resultado)
-    label_list.insert(tk.END,f"TME Ejecutado: {proceso.tiempo_maximo-proceso.duracion}")
-    label_list.insert(tk.END,f"TME Restante: {proceso.duracion}")
+  def extraer_datos2(self, proceso, label_list):
+    label_list.insert(tk.END, f"{proceso.id} - {proceso.nombre_de_proceso}")
+    label_list.insert(tk.END, proceso.resultado)
+    label_list.insert(tk.END, f"TME Ejecutado: {proceso.tiempo_maximo - proceso.duracion-1}")
+    label_list.insert(tk.END, f"TME Restante: {proceso.duracion}")
 
   def generar_txt(self):
-    with open('resultados.txt','w') as archivo:
-      archivo.write(self.text+"\n")
+    with open('resultados.txt', 'w') as archivo:
+      archivo.write(self.text + "\n")
 
   def generar_datos_del_programa(self):
-    i=1
-    txt=""
-    with open('datos.txt','w')as archivo:
-      for lote in self.matriz_procesos:
-        txt+=f"Lote {i}\n"
-        i+=1
-        for proceso in lote:
-          txt+=f"{proceso.id} - {proceso.nombre_de_proceso}\nTME:{proceso.duracion}\n{proceso.operacion}\n"
-      archivo.write(txt+"\n")
+    txt = ""
+    with open('datos.txt', 'w') as archivo:
+      for proceso in self.lista_nuevos:
+        txt += f"{proceso.id} - {proceso.nombre_de_proceso}\nTME:{proceso.duracion}\n{proceso.operacion}\n"
+      archivo.write(txt + "\n")
+      
+  def interrumpir_proceso_actual(self):
+    # Preguntarle a la maestra como hacerle :(
+    print("Interrumpir proceso")
+    self.cantidad_procesos_interrupcion += 1
+    self.bandera_interrupcion = True
+    self.proceso_actual.set_tiempo_a_interrumpir(self.tiempo_a_interrumpir)
+    # self.procesar_siguiente_proceso()
+  def actualizar_lista_de_interrupcion(self):
+    self.bloqueados.delete(0, tk.END)
+    for proceso in self.lista_bloqueados:
+      if(proceso.tiempo_interrumpido>0):
+        proceso.tiempo_interrumpido-=1
+        self.bloqueados.insert("end",f"{proceso.id} - {proceso.nombre_de_proceso}")
+        self.bloqueados.insert("end",f"TME:{self.tiempo_a_interrumpir-proceso.tiempo_interrumpido-1}")
+      elif proceso.tiempo_interrumpido <= 0:
+        self.lista_listos.append(proceso)
+        self.lista_bloqueados.remove(proceso)
+    
+  def terminar_proceso_actual_con_error(self):
+    self.proceso_actual.terminar_proceso_error()
