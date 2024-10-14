@@ -44,6 +44,7 @@ class Procesos:
       resultado=num1*num2
     elif(self.operacion=="/"):
       resultado=num1/num2
+    resultado=round(resultado,2)
     self.operacion=f"{num1} {self.operacion} {num2}"
     return f"{self.operacion} = {resultado}"
   def set_tiempo_a_interrumpir(self,tiempo_a_interrumpir):

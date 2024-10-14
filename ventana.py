@@ -75,8 +75,8 @@ class ProcesamientoPorLotesApp:
         frame_bottom.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=10)
 
         # Etiqueta para '# de Lotes pendientes:'
-        self.label_lotes_pendientes = tk.Label(frame_bottom, text="# de Lotes pendientes:")
-        self.label_lotes_pendientes.pack(side=tk.LEFT)
+        self.label_procesos_pendientes = tk.Label(frame_bottom, text="# de Procesos pendientes:")
+        self.label_procesos_pendientes.pack(side=tk.LEFT)
 
         # Botón para 'OBTENER RESULTADOS'
         self.button_obtener_resultados = tk.Button(frame_bottom, text="OBTENER RESULTADOS", command=lambda:self.admin.generar_txt())
@@ -85,7 +85,7 @@ class ProcesamientoPorLotesApp:
     def iniciar_simulacion(self,cantidad_procesos):
       if int(cantidad_procesos)<100000:
         self.button_generate.config(state=tk.DISABLED)
-        administrador = AdministradorDeProcesos(cantidad_procesos,self.button_generate,self.label_reloj_global,self.root,self.listbox_en_espera,self.listbox_ejecucion ,self.listbox_bloqueados,self.listbox_terminados)#,self.label_lotes_pendientes)
+        administrador = AdministradorDeProcesos(cantidad_procesos,self.button_generate,self.label_reloj_global,self.root,self.listbox_en_espera,self.listbox_ejecucion ,self.listbox_bloqueados,self.listbox_terminados,self.label_procesos_pendientes)
         self.admin=administrador
         # Reiniciar listas antes de empezar otra simulacion
         self.listbox_en_espera.delete(0,tk.END)

@@ -2,7 +2,7 @@ import tkinter as tk
 from procesos import *
 
 class AdministradorDeProcesos:
-  def __init__(self, cantidad_procesos, boton, reloj_global, root, lista_espera, lista_ejecucion,inter_bloqueados,lista_terminados):
+  def __init__(self, cantidad_procesos, boton, reloj_global, root, lista_espera, lista_ejecucion,inter_bloqueados,lista_terminados,label_procesos_pendientes):
     # Boton
     self.button_generate = boton
     # Tiempos
@@ -25,11 +25,15 @@ class AdministradorDeProcesos:
     self.lista_listos = []
 
     self.proceso_actual=None
+    # Proceos pendientes
+    self.procesos_pendientes = label_procesos_pendientes
 
     self.cantidad_procesos_interrupcion = 0
     self.bandera_interrupcion = False
     self.tiempo_a_interrumpir=5
     self.lista_bloqueados=[]
+    # Lista de resultados
+    self.lista_resultados = []
     # Bandera que se activa cuando hay procesos en ejecucion
     self.estatus = False
     # Algoritmo de planificación
@@ -55,6 +59,7 @@ class AdministradorDeProcesos:
   def iniciar_simulacion(self):
     self.llenar_lista_de_listos()
     self.mostrar_listos()
+    self.procesos_pendientes.config(text=f"# de Procesos pendientes: {len(self.lista_nuevos)}")
     self.estatus = True
     self.button_generate.config(state=tk.DISABLED)
     self.procesar_siguiente_proceso()  # Iniciar con el primer proceso según el algoritmo
@@ -108,8 +113,10 @@ class AdministradorDeProcesos:
       self.lista_terminados.insert(tk.END, proceso.resultado)
       self.text += f"{proceso.id} - {proceso.nombre_de_proceso}\n{proceso.resultado}\n"
       # 
+      self.lista_resultados.append(proceso)
       self.lista_listos.remove(proceso)
       self.llenar_lista_de_listos()
+      self.procesos_pendientes.config(text=f"# de Procesos pendientes: {len(self.lista_nuevos)}")
       self.procesar_siguiente_proceso()
   def mostrar_listos(self, event=None):
     self.lista_espera.delete(0, tk.END)
@@ -148,6 +155,7 @@ class AdministradorDeProcesos:
   def generar_txt(self):
     with open('resultados.txt', 'w') as archivo:
       archivo.write(self.text + "\n")
+    self.generar_tabla_de_resultados()
 
   def generar_datos_del_programa(self):
     txt = ""
@@ -176,3 +184,15 @@ class AdministradorDeProcesos:
     
   def terminar_proceso_actual_con_error(self):
     self.proceso_actual.terminar_proceso_error()
+  def generar_tabla_de_resultados(self):
+    with open("resultados.txt", "a") as file:
+      # Obtener el encabezado (los nombres de los atributos del primer objeto)
+      headers=["ID","Tiempo de llegada","Tiempo de Finalizacion","Tiempo de retorno","Tiempo de respuesta","Tiempo de espera","Tiempo de servicio"]
+      # headers = vars(self.lista_resultados[0]).keys()
+      file.write("\t".join(headers) + "\n")
+      
+      # Escribir las filas (los valores de los atributos de cada objeto)
+      for proceso in self.lista_resultados:
+          # valores = [str(valor) for valor in vars(proceso).values()]
+          v = [str(proceso.id),str(proceso.tiempo_de_llegada),str(proceso.tiempo_de_finalizacion),str(proceso.tiempo_de_retorno),str(proceso.tiempo_de_respuesta),str(proceso.tiempo_de_espera),str(proceso.tiempo_de_servicio)]
+          file.write(v[0]+"\t\t\t\t\t"+v[1]+"\t\t\t\t\t\t\t\t\t\t\t"+v[2]+"\t\t\t\t\t\t\t\t\t\t\t"+v[3]+"\t\t\t\t\t\t\t\t\t"+v[4]+"\t\t\t\t\t\t\t\t\t\t"+v[5]+"\t\t\t\t\t\t\t\t\t\t"+v[6]+"\n")
