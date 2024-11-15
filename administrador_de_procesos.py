@@ -69,7 +69,12 @@ class AdministradorDeProcesos:
     if len(self.lista_listos) > 0 or len(self.lista_bloqueados):  # Si aún hay procesos por ejecutar
       proceso, tiempo_ejecucion = self.algoritmo_de_planificacion()
       self.proceso_actual = proceso
-      if proceso:  # Si se seleccionó un proceso válido      
+      if proceso:  # Si se seleccionó un proceso válido
+        self.llenar_lista_de_listos()
+        proceso.asignar_tiempo_de_respuesta(self.tiempo_global)   
+        # print(proceso)
+        if(proceso.duracion > 0):
+          proceso.sumar_tiempo_de_espera(self.tiempo_global) ################
         self.ejecutar_tiempo_de_proceso(proceso, tiempo_ejecucion)
       else:
         print("No hay procesos listos para ejecutar")#Buscar una solucion para cuando todos los procesos sean interrumpidos
@@ -85,6 +90,7 @@ class AdministradorDeProcesos:
       self.lista_listos.remove(self.proceso_actual)
       self.procesar_siguiente_proceso()
     elif(time>0 and proceso.duracion>0):
+      proceso.add_tiempo_de_servicio()
       self.actualizar_reloj_global(1)
       self.actualizar_lista_de_interrupcion()
       proceso.duracion -= 1
@@ -112,12 +118,17 @@ class AdministradorDeProcesos:
       self.lista_terminados.insert(tk.END, f"{proceso.id} - {proceso.nombre_de_proceso}")
       self.lista_terminados.insert(tk.END, proceso.resultado)
       self.text += f"{proceso.id} - {proceso.nombre_de_proceso}\n{proceso.resultado}\n"
-      # 
+      
+      proceso.asignar_tiempo_de_finalizacion(self.tiempo_global)
+      # if proceso.error:
+      #   proceso.asignar_tiempo_de_servicio(self.tiempo_global)
+      # else:
+      #   proceso.asignar_tiempo_de_servicio()
       self.lista_resultados.append(proceso)
       self.lista_listos.remove(proceso)
       self.llenar_lista_de_listos()
       self.procesos_pendientes.config(text=f"# de Procesos pendientes: {len(self.lista_nuevos)}")
-      self.procesar_siguiente_proceso()
+      self.procesar_siguiente_proceso()  
   def mostrar_listos(self, event=None):
     self.lista_espera.delete(0, tk.END)
     # print("mostar listos")
@@ -132,6 +143,7 @@ class AdministradorDeProcesos:
   def llenar_lista_de_listos(self):
     if(len(self.lista_listos) < self.cantidad_procesos_listos-self.cantidad_procesos_interrupcion):
       if(len(self.lista_nuevos) > 0):
+        self.lista_nuevos[0].asignar_tiempo_de_llegada(self.tiempo_global)
         self.lista_listos.append(self.lista_nuevos.pop(0))
         self.llenar_lista_de_listos()
 
@@ -169,6 +181,7 @@ class AdministradorDeProcesos:
     print("Interrumpir proceso")
     self.cantidad_procesos_interrupcion += 1
     self.bandera_interrupcion = True
+    self.proceso_actual.ultimo_time=self.tiempo_global
     self.proceso_actual.set_tiempo_a_interrumpir(self.tiempo_a_interrumpir)
     # self.procesar_siguiente_proceso()
   def actualizar_lista_de_interrupcion(self):
@@ -183,11 +196,12 @@ class AdministradorDeProcesos:
         self.lista_bloqueados.remove(proceso)
     
   def terminar_proceso_actual_con_error(self):
-    self.proceso_actual.terminar_proceso_error()
+    self.proceso_actual.terminar_proceso_error(self.tiempo_global)
   def generar_tabla_de_resultados(self):
     with open("resultados.txt", "a") as file:
       # Obtener el encabezado (los nombres de los atributos del primer objeto)
       headers=["ID","Tiempo de llegada","Tiempo de Finalizacion","Tiempo de retorno","Tiempo de respuesta","Tiempo de espera","Tiempo de servicio"]
+      # ,"Tiempo de espera"
       # headers = vars(self.lista_resultados[0]).keys()
       file.write("\t".join(headers) + "\n")
       
@@ -195,4 +209,6 @@ class AdministradorDeProcesos:
       for proceso in self.lista_resultados:
           # valores = [str(valor) for valor in vars(proceso).values()]
           v = [str(proceso.id),str(proceso.tiempo_de_llegada),str(proceso.tiempo_de_finalizacion),str(proceso.tiempo_de_retorno),str(proceso.tiempo_de_respuesta),str(proceso.tiempo_de_espera),str(proceso.tiempo_de_servicio)]
+          # ,str(proceso.tiempo_de_espera)
           file.write(v[0]+"\t\t\t\t\t"+v[1]+"\t\t\t\t\t\t\t\t\t\t\t"+v[2]+"\t\t\t\t\t\t\t\t\t\t\t"+v[3]+"\t\t\t\t\t\t\t\t\t"+v[4]+"\t\t\t\t\t\t\t\t\t\t"+v[5]+"\t\t\t\t\t\t\t\t\t\t"+v[6]+"\n")
+          # +v[5]+"\t\t\t\t\t\t\t\t\t\t"

@@ -7,6 +7,8 @@ class Procesos:
 
   def __init__(self):
     # Datos Iniciales del Proceso
+
+    self.ultimo_time=0
     self.nombre_de_proceso=""
     self.duracion=0
     self.operacion=""
@@ -33,6 +35,10 @@ class Procesos:
     # Tiempo  interrumpido
     self.tiempo_interrumpido=0
 
+    self.bandera_atendido=True
+    # Terminar por error
+    self.error=False
+
   def generar_operacion(self):
     num1=random.randint(0,100)
     num2=random.randint(1,100)
@@ -53,25 +59,45 @@ class Procesos:
   def asignar_tiempo_de_llegada(self,tiempo_de_llegada):
     self.tiempo_de_llegada=tiempo_de_llegada
   # Hora en la que el proceso termino su ejecucion
-  def asignar_tiempo_de_finalizacion(self,tiempo_de_finalizacion):  
+  def asignar_tiempo_de_finalizacion(self,tiempo_de_finalizacion):
+
     self.tiempo_de_finalizacion=tiempo_de_finalizacion    
+    self.calcular_tiempo_de_retorno()
   # Tiempo que transcurre desde que llega hasta que termina su ejecucion
   def calcular_tiempo_de_retorno(self): 
     self.tiempo_de_retorno=self.tiempo_de_finalizacion-self.tiempo_de_llegada
+  ############################################################
+  # Falta implementar en el administrador de procesos, ya no
+  ############################################################
   # Tiempo transcurrido desde que llega hasta que es atendido por primera vez
   def asignar_tiempo_de_respuesta(self,tiempo):
-    self.tiempo_de_respuesta=tiempo-self.tiempo_de_llegada
+    if(self.bandera_atendido):
+      self.tiempo_de_respuesta=tiempo-self.tiempo_de_llegada
+      self.bandera_atendido=False
   # tiempo que el proceso estuvo en esperando para usar el procesador
   def sumar_tiempo_de_espera(self,tiempo_de_espera):
-    self.tiempo_de_espera+=tiempo_de_espera
+    if(self.ultimo_time!=0):
+      self.tiempo_de_espera+=(tiempo_de_espera-self.ultimo_time)
+      print(f"sumar ={self.tiempo_de_espera}")
+    else:
+      self.tiempo_de_espera=tiempo_de_espera
+      print(f"tiempo de espera = {self.tiempo_de_espera}")
+    # self.ultimo_time=tiempo_de_espera
 
-  def asignar_tiempo_de_servicio(self):
+  def add_tiempo_de_servicio(self,tme=0):
     # Anadir condiciones adicionales en caso de termino por error
-    self.tiempo_de_servicio=self.tiempo_maximo
+    # if(tme==0):
+    #   self.tiempo_de_servicio=self.tiempo_maximo
+    # else:
+    #   self.tiempo_de_servicio=tme
+    self.tiempo_de_servicio+=1
 
-  def terminar_proceso_error(self):
+  def terminar_proceso_error(self,tme):
+    self.error=True
     self.duracion=0
     self.resultado=f"{self.operacion} = Error"
+
+    # self.tiempo_de_servicio=self.tiempo_de_llegada-tme
 
   @staticmethod
   def restart():
