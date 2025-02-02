@@ -1,0 +1,28 @@
+1 - Juan
+TME:11
+43 + 13
+2 - Carlos
+TME:10
+44 * 95
+3 - Carlos
+TME:8
+33 * 56
+4 - Carlos
+TME:6
+98 + 13
+5 - Jose
+TME:7
+42 / 26
+6 - Jose
+TME:8
+13 / 83
+7 - Juan
+TME:10
+70 + 7
+8 - Carolina
+TME:9
+22 / 14
+9 - Carolina
+TME:6
+77 + 64
+

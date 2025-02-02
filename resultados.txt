@@ -1,0 +1,29 @@
+2 - Carlos
+44 * 95 = Error
+3 - Carlos
+33 * 56 = 1848
+4 - Carlos
+98 + 13 = 111
+5 - Jose
+42 / 26 = 1.62
+6 - Jose
+13 / 83 = 0.16
+7 - Juan
+70 + 7 = 77
+8 - Carolina
+22 / 14 = 1.57
+1 - Juan
+43 + 13 = 56
+9 - Carolina
+77 + 64 = 141
+
+ID	Tiempo de llegada	Tiempo de Finalizacion	Tiempo de retorno	Tiempo de respuesta	Tiempo de espera	Tiempo de servicio
+2					0											10											10									5										5										5
+3					0											18											18									10										10										8
+4					0											24											24									18										18										6
+5					0											31											31									24										24										7
+6					0											39											39									31										31										8
+7					0											49											49									39										39										10
+8					10											58											48									39										49										9
+1					0											64											64									0										53										11
+9					24											70											46									40										64										6
